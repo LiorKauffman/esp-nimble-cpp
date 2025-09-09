@@ -883,6 +883,7 @@ void NimBLEDevice::init(const std::string &deviceName) {
 #  endif
 
 #  ifdef CONFIG_BTDM_BLE_SCAN_DUPL
+        printf("Scan for Duplicates!\n");
         bt_cfg.normal_adv_size = m_scanDuplicateSize;
         bt_cfg.scan_duplicate_type = m_scanFilterMode;
 #  endif

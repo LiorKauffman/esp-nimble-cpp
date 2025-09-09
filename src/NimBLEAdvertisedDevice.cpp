@@ -173,7 +173,7 @@ std::string NimBLEAdvertisedDevice::getManufacturerData(uint8_t index) {
         }
     }
 
-    return "";
+    return "not Found!";
 } // getManufacturerData
 
 

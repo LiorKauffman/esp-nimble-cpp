@@ -21,16 +21,43 @@
 
 #include <string>
 #include <climits>
-
+#include <array>
+#include <iostream>
+#include <vector>
+#include <stdexcept>
 static const char* LOG_TAG = "NimBLEScan";
+
+// Function to swap endianness of a uint32_t
+uint32_t swapEndian(uint32_t val) {
+    return ((val >> 24) & 0x000000FF) |
+           ((val >> 8)  & 0x0000FF00) |
+           ((val << 8)  & 0x00FF0000) |
+           ((val << 24) & 0xFF000000);
+}
+
+// Function to swap endianness for each uint32_t in a uint8_t array
+void swapEndianArray(uint8_t* array, size_t length) {
+    // Ensure the length is a multiple of 4 for uint32_t
+    if (length % 4 != 0) {
+        // throw std::invalid_argument("Array length must be a multiple of 4");
+        NIMBLE_LOGE(LOG_TAG, "Array length must be a multiple of 4");\
+    }
+
+    // Swap endianness for each uint32_t in the array
+    for (size_t i = 0; i < length; i += 4) {
+        uint32_t* element = reinterpret_cast<uint32_t*>(array + i);
+        *element = swapEndian(*element);
+    }
+}
 
 
 /**
  * @brief Scan constuctor.
+
  */
 NimBLEScan::NimBLEScan() {
     m_scan_params.filter_policy      = BLE_HCI_SCAN_FILT_NO_WL;
-    m_scan_params.passive            = 1; // If set, don’t send scan requests to advertisers (i.e., don’t request additional advertising data).
+    m_scan_params.passive            = 0; // If set, don’t send scan requests to advertisers (i.e., don’t request additional advertising data).
     m_scan_params.itvl               = 0; // This is defined as the time interval from when the Controller started its last LE scan until it begins the subsequent LE scan. (units=0.625 msec)
     m_scan_params.window             = 0; // The duration of the LE scan. LE_Scan_Window shall be less than or equal to LE_Scan_Interval (units=0.625 msec)
     m_scan_params.limited            = 0; // If set, only discover devices in limited discoverable mode.
@@ -78,6 +105,20 @@ int NimBLEScan::handleGapEvent(ble_gap_event* event, void* arg) {
             const auto event_type = disc.event_type;
 #endif
             NimBLEAddress advertisedAddress(disc.addr);
+            std::array<uint8_t, sizeof(struct ble_gap_disc_desc)> dataToPrint;
+            auto dataToPrintPtr = dataToPrint.data();
+            
+            memcpy(dataToPrint.data(), &disc, sizeof(struct ble_gap_disc_desc));
+            // memcpy(dataToPrint, &disc,)
+
+            printf("dataToPrint: ");
+
+            for (auto elementToPrint : dataToPrint)
+            {
+                printf("0x%x ", elementToPrint);
+            }
+
+            printf("\n");
 
             // Examine our list of ignored addresses and stop processing if we don't want to see it or are already connected
             if(NimBLEDevice::isIgnored(advertisedAddress)) {
