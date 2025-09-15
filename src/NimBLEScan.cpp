@@ -105,20 +105,6 @@ int NimBLEScan::handleGapEvent(ble_gap_event* event, void* arg) {
             const auto event_type = disc.event_type;
 #endif
             NimBLEAddress advertisedAddress(disc.addr);
-            std::array<uint8_t, sizeof(struct ble_gap_disc_desc)> dataToPrint;
-            auto dataToPrintPtr = dataToPrint.data();
-            
-            memcpy(dataToPrint.data(), &disc, sizeof(struct ble_gap_disc_desc));
-            // memcpy(dataToPrint, &disc,)
-
-            printf("dataToPrint: ");
-
-            for (auto elementToPrint : dataToPrint)
-            {
-                printf("0x%x ", elementToPrint);
-            }
-
-            printf("\n");
 
             // Examine our list of ignored addresses and stop processing if we don't want to see it or are already connected
             if(NimBLEDevice::isIgnored(advertisedAddress)) {
